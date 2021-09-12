@@ -4,6 +4,11 @@
 
 <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
 
+@if (true)
+{
+    @Button
+}
+
 @code {
     private int currentCount = 0;
 
@@ -11,4 +16,12 @@
     {
         currentCount++;
     }
+
+    private RenderFragment Button => builder =>
+    {
+        builder.OpenElement(1, "button");
+        builder.AddContent(2, "New Button");
+        builder.CloseElement();
+    };
+
 }

@@ -12,7 +12,6 @@ namespace Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
     public class RazorFileController : ControllerBase
     {
         private readonly ILogger<RazorFileController> _logger;
