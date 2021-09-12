@@ -1,8 +1,11 @@
 ﻿@page "/edit"
 @using Microsoft.AspNetCore.Components
 @using global::Shared
+@using Microsoft.AspNetCore.Authorization
 @inject HttpClient _httpClient
 @inject CompileService _compileService
+
+@attribute [Authorize]
 
 <div>
     <div class="form-group">
