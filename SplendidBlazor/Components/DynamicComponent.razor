@@ -1,0 +1,30 @@
+﻿@inject CompileService _compileService
+@inject HttpClient _httpClient
+
+@if (_type != null)
+{
+    @dynamicComponent(_type)
+}
+
+@code {
+    private Type _type;
+    
+    [Parameter]
+    public Type DefaultType { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await _compileService.Init();
+        _type = DynamicType ?? DefaultType;
+        StateHasChanged();
+    }
+
+    private Type DynamicType => _compileService.DynamicAssembly?.GetExportedTypes().FirstOrDefault(x => x.Name == DefaultType.Name);
+
+    private RenderFragment dynamicComponent(Type t) => builder =>
+    {
+        builder.OpenComponent(0, t);
+        builder.CloseComponent();
+    };
+
+}

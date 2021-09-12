@@ -1,0 +1,64 @@
+﻿@page "/edit"
+@using Microsoft.AspNetCore.Components
+@using global::Shared
+@inject HttpClient _httpClient
+
+<div>
+    <div class="form-group">
+        <label for="exampleFormControlTextarea1">Class Name</label>
+        <input class="form-control" @bind-value="_file.ClassName"/>
+    </div>
+    <button type="button" class="btn btn-primary" @onclick="Search">Search</button>
+    <div class="form-group">
+        <label for="exampleFormControlTextarea1">Blazor Code</label>
+        <textarea class="form-control" id="exampleFormControlTextarea1" rows="10" @bind="_file.Contents"></textarea>
+    </div>
+    <button type="button" class="btn btn-primary" @onclick="Save">Save</button>
+</div>
+
+@code {
+
+    private RazorFile _file = new()
+    {
+        Contents = defaultCode
+    };
+
+    private Dictionary<string, RazorFile> _files = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var files = await _httpClient.GetFromJsonAsync<List<RazorFile>>("RazorFile");
+        _files = files.ToDictionary(x => x.ClassName, y => y);
+    }
+
+    private const string defaultCode =
+        @"@using Microsoft.AspNetCore.Components.Web
+      <h1>Counter</h1>
+      
+      <p>Current count: @currentCount</p>
+      
+      <button class=""btn btn-primary"" @onclick=""IncrementCount"">Click me</button>
+      
+      @code {
+          int currentCount = 0;
+      
+          void IncrementCount()
+          {
+              currentCount++;
+          }
+      }";
+
+    private void Search()
+    {
+        _file = _files[_file.ClassName];
+    }
+
+    private async void Save()
+    {
+        var response = await _httpClient.PostAsJsonAsync("RazorFile", _file);
+        if (!response.IsSuccessStatusCode) return;
+        _file = await response.Content.ReadFromJsonAsync<RazorFile>();
+        _files[_file.ClassName] = _file;
+    }
+
+}
