@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Shared;
 
@@ -11,6 +12,7 @@ namespace Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class RazorFileController : ControllerBase
     {
         private readonly ILogger<RazorFileController> _logger;
@@ -42,6 +44,8 @@ namespace Api.Controllers
         [HttpGet]
         public async Task<IActionResult> GetRazorFiles()
         {
+            if (User == null || !User.Identity.IsAuthenticated)
+                return Ok(new List<object>());
             var files = await _dbContext.RazorFiles.ToListAsync();
             return Ok(files);
         }

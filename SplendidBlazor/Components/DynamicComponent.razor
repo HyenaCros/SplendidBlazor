@@ -15,11 +15,12 @@
     protected override async Task OnInitializedAsync()
     {
         await _compileService.Init();
-        _type = DynamicType ?? DefaultType;
-        StateHasChanged();
+        _compileService.DynamicAssembly.Subscribe(assembly =>
+        {
+            _type = assembly?.GetExportedTypes().FirstOrDefault(x => x.Name == DefaultType.Name) ?? DefaultType;
+            StateHasChanged();
+        });
     }
-
-    private Type DynamicType => _compileService.DynamicAssembly?.GetExportedTypes().FirstOrDefault(x => x.Name == DefaultType.Name);
 
     private RenderFragment dynamicComponent(Type t) => builder =>
     {

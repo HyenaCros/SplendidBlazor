@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Authorization;
 
 namespace SplendidBlazor
 {
@@ -19,6 +20,8 @@ namespace SplendidBlazor
 
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:6001/api/") });
             builder.Services.AddScoped<CompileService>();
+            builder.Services.AddAuthorizationCore();
+            builder.Services.AddScoped<AuthenticationStateProvider, SplendidAuthStateProvider>();
 
             await builder.Build().RunAsync();
         }

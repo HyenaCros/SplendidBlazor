@@ -1,5 +1,7 @@
-﻿@inherits LayoutComponentBase
-
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@inherits LayoutComponentBase
+@inject AuthenticationStateProvider _authStateProvider
+@inject CompileService _compileService
 <div class="page">
     <div class="sidebar">
         <NavMenu />
@@ -7,7 +9,10 @@
 
     <div class="main">
         <div class="top-row px-4">
-            <a href="http://blazor.net" target="_blank" class="ml-md-auto">About</a>
+            @if (!_loggedIn)
+            {
+                <button class="btn btn-primary ml-md-auto" @onclick="Login">Log In</button>
+            }
         </div>
 
         <div class="content px-4">
@@ -15,3 +20,14 @@
         </div>
     </div>
 </div>
+
+@code {
+    private bool _loggedIn = false;
+    private async void Login()
+    {
+        await (_authStateProvider as SplendidAuthStateProvider).Authorize();
+        await _compileService.Init(true);
+        _loggedIn = true;
+        StateHasChanged();
+    }
+}

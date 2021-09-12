@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Reactive.Subjects;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,16 +25,18 @@ namespace SplendidBlazor
         private readonly NavigationManager _uriHelper;
         public List<string> CompileLog { get; set; }
         private List<MetadataReference> references { get; set; }
-        
-        public Assembly DynamicAssembly { get; set; }
-        
+
+        private BehaviorSubject<Assembly> _dynamicAssembly = new(null);
+
+        public IObservable<Assembly> DynamicAssembly => _dynamicAssembly;
+
         public CompileService(HttpClient http, NavigationManager uriHelper)
         {
             _http = http;
             _uriHelper = uriHelper;
         }
 
-        public async Task Init()
+        public async Task Init(bool reload = false)
         {
             if (references == null)
             {
@@ -54,7 +57,7 @@ namespace SplendidBlazor
                 }
             }
 
-            if (DynamicAssembly == null)
+            if (DynamicAssembly == null || reload)
             {
                 var files = await _http.GetFromJsonAsync<List<RazorFile>>("RazorFile");
                 
@@ -120,7 +123,8 @@ namespace SplendidBlazor
             }
 
             CompileLog.Add("Compile assembly");
-            DynamicAssembly = await Compile(csContents);
+            var assembly = await Compile(csContents);
+            _dynamicAssembly.OnNext(assembly);
         }
 
 
@@ -150,7 +154,7 @@ namespace SplendidBlazor
             CompileLog.Add("Parse SyntaxTree Success");
 
             CSharpCompilation compilation = CSharpCompilation.Create("SplendidBlazor.Dynamic", syntaxTrees,
-                references, new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+                references, new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, concurrentBuild: false));
 
             using (MemoryStream stream = new MemoryStream())
             {

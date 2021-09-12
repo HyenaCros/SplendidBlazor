@@ -2,6 +2,7 @@
 @using Microsoft.AspNetCore.Components
 @using global::Shared
 @inject HttpClient _httpClient
+@inject CompileService _compileService
 
 <div>
     <div class="form-group">
@@ -59,6 +60,7 @@
         if (!response.IsSuccessStatusCode) return;
         _file = await response.Content.ReadFromJsonAsync<RazorFile>();
         _files[_file.ClassName] = _file;
+        await _compileService.Init(true);
     }
 
 }
